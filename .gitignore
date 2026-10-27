@@ -1,0 +1,4 @@
+dist/
+tests/dev-credentials.env
+.worktrees/
+para-enviar-ao-david/

@@ -1,0 +1,50 @@
+# WordPress local para testar o plugin (OrbStack). http://localhost:8088
+services:
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_DATABASE: wp
+      MARIADB_USER: wp
+      MARIADB_PASSWORD: wp
+      MARIADB_ROOT_PASSWORD: root
+    volumes:
+      - db:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:6-php8.2-apache
+    depends_on: [db]
+    ports:
+      - "8088:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+      WORDPRESS_DEBUG: "1"
+    volumes:
+      - wp:/var/www/html
+      - ./plugin/typeform-purchase-uk:/var/www/html/wp-content/plugins/typeform-purchase-uk
+
+  # Recebe os pedidos "sGTM" e GA4 em teste e mostra-os nos logs (docker compose logs echo)
+  echo:
+    image: mendhak/http-https-echo:35
+    environment:
+      HTTP_PORT: 8080
+
+  cli:
+    image: wordpress:cli-php8.2
+    profiles: [tools]
+    depends_on: [db, wordpress]
+    user: "33:33"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wp
+      WORDPRESS_DB_USER: wp
+      WORDPRESS_DB_PASSWORD: wp
+    volumes:
+      - wp:/var/www/html
+      - ./plugin/typeform-purchase-uk:/var/www/html/wp-content/plugins/typeform-purchase-uk
+
+volumes:
+  db:
+  wp:
